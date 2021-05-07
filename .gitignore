@@ -1,0 +1,10 @@
+.idea/
+__pycache__
+.env
+*.sqlite
+local/
+migrations/
+
+# Project exclude paths
+/venv/
+/ml/venv/
