@@ -19,7 +19,7 @@ class AuthLogin(Resource):
     @api.doc(
         "Auth login",
         responses={
-            200: ("Logged in", AuthDto.auth_success),
+            200: ("Logged in.", AuthDto.auth_success),
             400: "Validations failed.",
             403: "Incorrect password or incomplete credentials.",
             404: "Username does not match any account.",

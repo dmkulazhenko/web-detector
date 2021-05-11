@@ -7,4 +7,6 @@ migrations/
 
 # Project exclude paths
 /venv/
-/ml/venv/
+/detector/processor/venv
+/detector/detector/venv
+

@@ -1,10 +1,11 @@
 import multiprocessing as mp
 
 import cv2
-from config import DETECTRON_MODEL_CFG, DETECTRON_MODEL_TS
 from detectron2.config import get_cfg
 from detectron2.data.detection_utils import read_image
-from predictor import Predictor
+
+from .config import DETECTRON_MODEL_CFG, DETECTRON_MODEL_TS
+from .predictor import Predictor
 
 
 def get_model_cfg():

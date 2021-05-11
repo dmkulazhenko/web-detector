@@ -1,0 +1,1 @@
+exec gunicorn -b :5000 --reload --workers 7 --threads 3 --timeout 60 --access-logfile - --error-logfile - web_app:app

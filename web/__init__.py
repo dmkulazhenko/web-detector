@@ -22,6 +22,10 @@ def create_app(config_name):
 
     app.register_blueprint(auth_bp)
 
+    from .detector import detector_bp
+
+    app.register_blueprint(detector_bp)
+
     return app
 
 

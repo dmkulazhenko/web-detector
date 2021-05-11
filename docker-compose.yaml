@@ -1,0 +1,57 @@
+version: "3.8"
+# TODO: remove waiter?
+services:
+  detector_web:
+    container_name: detector_web
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    working_dir: /app
+    environment:
+      - FLASK_APP=web_app.py
+      - CELERY_MODE=CLIENT
+    volumes:
+      - .:/app:ro
+    ports:
+      - 5000:5000
+    restart: unless-stopped
+    command: sh ./web_app.sh
+
+  detector_processor:
+    container_name: detector_celery
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile:
+    command: sh -c "sleep 10 && celery -A libor_celery worker --loglevel=INFO"
+    environment:
+      - CELERY_MODE=PROCESSOR
+    volumes:
+      - .:/app:rw
+    depends_on:
+      - detector_redis
+
+  detector_detector:
+    build:
+      context: .
+      dockerfile: detector/Dockerfile
+      args:
+        USER_ID: ${USER_ID:-1000}
+    shm_size: "8gb"
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    volumes:
+      - .:/home/appuser/app:ro
+    environment:
+      - DISPLAY=$DISPLAY
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CELERY_MODE=DETECTOR
+    depends_on:
+      - detector_redis
+    command: sleep 1000000
+
+  detector_redis:
+    container_name: detector_redis
+    restart: unless-stopped
+    image: redis

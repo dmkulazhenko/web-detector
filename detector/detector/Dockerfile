@@ -41,4 +41,8 @@ ENV FVCORE_CACHE="/tmp"
 
 # ---
 
-WORKDIR /home/appuser
+RUN pip install --user celery
+
+# ---
+
+WORKDIR /home/appuser/app
