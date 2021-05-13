@@ -1,6 +1,0 @@
-- Go through source code files and check everything
-- Go through docker files and check everything
-- Go through sources and leave comments / docs
-- Crete diagrams
-- Create text readme with links to swagger (nvidia toolkit required)
-- Limit resource usage during scaling?
