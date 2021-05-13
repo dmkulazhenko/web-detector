@@ -9,4 +9,7 @@ migrations/
 /venv/
 /detector/processor/venv
 /detector/detector/venv
+
+# Storages
 /video_storage
+/mysql_data

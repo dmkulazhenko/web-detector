@@ -9,18 +9,22 @@ services:
       - FLASK_APP=web_app.py
       - CELERY_MODE=CLIENT
       - VIDEO_STORAGE=/video_storage
+      - SQLALCHEMY_MIGRATIONS_DIR=/migrations
+      - MYSQL_WAITER=30:5
     env_file:
       - .env
     volumes:
       - .:/app:ro
+      - ./migrations:/migrations:rw
       - ./video_storage:/video_storage:rw
     ports:
       - 5000:5000
     depends_on:
       - detector_processor
       - detector_detector
+      - detector_mysql
     restart: unless-stopped
-    command: sh ./web_app.sh
+    command: sh -c "./web_app.sh $MIGRATE"
 
   detector_processor:
     container_name: detector_processor
@@ -74,6 +78,14 @@ services:
       - detector_redis
     command: sh -c "celery -A detector.detector.detector_celery worker -Q detector --autoscale 2,1 --loglevel=INFO"
 
+  detector_mysql:
+    container_name: detector_mysql
+    image: mysql
+    env_file:
+      - .env
+    volumes:
+      - ./mysql_data:/var/lib/mysql:rw
+
   detector_redis:
     container_name: detector_redis
     image: redis
@@ -83,3 +95,4 @@ services:
     container_name: detector_rabbitmq
     image: rabbitmq
     restart: unless-stopped
+
