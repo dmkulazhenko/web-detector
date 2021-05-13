@@ -74,11 +74,11 @@ Where:
 ### Scaling
 ##### Horizontal
 - Flask app / processor workers / dector workers use different docker images, so different environments, so can be easily scaled out;
-- As far as processor/detector workers are celery-based - they have simple autoscaling (start new workers on one node if needed).
+- As far as processor/detector workers are celery-based - they have auto-sync, so we can easily increase number of nodes (even when service is live).
 
 ##### Vertical
 - Detector workers image based on [nvidia-cuda](https://hub.docker.com/r/nvidia/cuda) and optimized for parallel run on multiple GPUs;
-- As far as processor/detector workers are celery-based - they have auto-sync, so we can easily increase number of nodes (even when service is live).
+- As far as processor/detector workers are celery-based - they have simple autoscaling (start new workers on one node if needed).
 
 -----
 
