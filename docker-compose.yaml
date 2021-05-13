@@ -84,8 +84,9 @@ services:
     image: mysql
     env_file:
       - .env
-    volumes:
-      - ./mysql_data:/var/lib/mysql:rw
+# Save data not only in container for production
+#    volumes:
+#      - ~/mysql_data:/var/lib/mysql:rw
 
   detector_redis:
     container_name: detector_redis
