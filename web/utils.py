@@ -1,19 +1,14 @@
 def message(status, msg):
-    response_object = {"status": status, "message": msg}
-    return response_object
+    return {"status": status, "message": msg}
 
 
 def validation_error(status, errors):
-    response_object = {"status": status, "errors": errors}
-
-    return response_object
+    return {"status": status, "errors": errors}
 
 
 def err_resp(msg, code):
-    err = message(False, msg)
-    return err, code
+    return message(False, msg), code
 
 
 def internal_err_resp():
-    err = message(False, "Something went wrong during the process!")
-    return err, 500
+    return message(False, "Something went wrong during the process!"), 500

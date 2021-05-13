@@ -1,6 +1,6 @@
 from werkzeug.datastructures import FileStorage
 
-from web.detector.dto import DetectorDto
+from .dto import DetectorDto
 
 
 def gen_detect_upload_request():

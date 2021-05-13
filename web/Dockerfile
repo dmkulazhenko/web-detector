@@ -5,6 +5,6 @@ RUN mkdir /app
 WORKDIR /app
 
 
-COPY requirements.txt requirements.txt
+COPY web/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir gunicorn

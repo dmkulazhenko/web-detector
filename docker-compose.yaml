@@ -1,5 +1,4 @@
 version: "3.8"
-# TODO: remove waiter?
 services:
   detector_web:
     container_name: detector_web
@@ -10,34 +9,55 @@ services:
     environment:
       - FLASK_APP=web_app.py
       - CELERY_MODE=CLIENT
+      - CELERY_BACKEND_URL=redis://detector_redis:6379/0
+      - CELERY_BROKER_URL=amqp://detector_rabbitmq
+      - VIDEO_STORAGE=/video_storage
     volumes:
       - .:/app:ro
+      - ~/storage:/video_storage:rw
     ports:
       - 5000:5000
+    depends_on:
+      - detector_processor
+      - detector_detector
     restart: unless-stopped
     command: sh ./web_app.sh
 
   detector_processor:
-    container_name: detector_celery
+    container_name: detector_processor
     restart: unless-stopped
     build:
       context: .
-      dockerfile:
-    command: sh -c "sleep 10 && celery -A libor_celery worker --loglevel=INFO"
+      dockerfile: detector/processor/Dockerfile
     environment:
       - CELERY_MODE=PROCESSOR
+      - CELERY_BACKEND_URL=redis://detector_redis:6379/0
+      - CELERY_BROKER_URL=amqp://detector_rabbitmq
+      - VIDEO_STORAGE=/video_storage
+      - C_FORCE_ROOT=true
     volumes:
       - .:/app:rw
+      - ~/storage:/video_storage:ro
     depends_on:
       - detector_redis
+      - detector_rabbitmq
+      - detector_detector
+    command: sh -c "sleep 15 && celery -A detector.processor.processor_celery worker -Q processor --autoscale 3,1 --loglevel=INFO"
 
   detector_detector:
+    container_name: detector_detector
     build:
       context: .
-      dockerfile: detector/Dockerfile
+      dockerfile: detector/detector/Dockerfile
       args:
         USER_ID: ${USER_ID:-1000}
     shm_size: "8gb"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities:
+                - gpu
     ulimits:
       memlock: -1
       stack: 67108864
@@ -47,11 +67,20 @@ services:
       - DISPLAY=$DISPLAY
       - NVIDIA_VISIBLE_DEVICES=all
       - CELERY_MODE=DETECTOR
+      - CELERY_BACKEND_URL=redis://detector_redis:6379/0
+      - CELERY_BROKER_URL=amqp://detector_rabbitmq
+      - C_FORCE_ROOT=true
     depends_on:
+      - detector_rabbitmq
       - detector_redis
-    command: sleep 1000000
+    command: sh -c "celery -A detector.detector.detector_celery worker -Q detector --autoscale 2,1 --loglevel=INFO"
 
   detector_redis:
     container_name: detector_redis
-    restart: unless-stopped
     image: redis
+    restart: unless-stopped
+
+  detector_rabbitmq:
+    container_name: detector_rabbitmq
+    image: rabbitmq
+    restart: unless-stopped

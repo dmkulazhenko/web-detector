@@ -1,16 +1,17 @@
 import os
-from typing import Type
+from typing import Type, Optional
 
 
 class Config:
     CELERY_BROKER = os.environ.get("CELERY_BROKER_URL")
-    CELERY_BACKEND = os.environ.get("CELERY_BROKER_URL")
+    CELERY_BACKEND = os.environ.get("CELERY_BACKEND_URL")
 
-    task_serializer = "json"
-    accept_content = ["json"]
+    task_serializer = "pickle"
+    accept_content = ["pickle", "json"]
     result_serializer = "json"
     timezone = "Europe/Minsk"
     enable_utc = True
+    task_create_missing_queues = True
 
 
 class ProcessorConfig(Config):
@@ -32,5 +33,5 @@ _config_map = {
 }
 
 
-def get_config_by_name(config_name: str = "CLIENT") -> Type[Config]:
+def get_config_by_name(config_name: Optional[str] = "CLIENT") -> Type[Config]:
     return _config_map[config_name or "CLIENT"]

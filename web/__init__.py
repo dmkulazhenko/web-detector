@@ -5,11 +5,13 @@ This module:
 - Contains create_app()
 - Registers extensions
 """
-
 from flask import Flask
 
+from celery_client import create_celery
 from .config import config_by_name
 from .extensions import bcrypt, db, jwt, ma
+
+celery = create_celery("CLIENT")  # FIXME: Pretty weird
 
 
 def create_app(config_name):
@@ -22,9 +24,9 @@ def create_app(config_name):
 
     app.register_blueprint(auth_bp)
 
-    from .detector import detector_bp
+    from .api import api_bp
 
-    app.register_blueprint(detector_bp)
+    app.register_blueprint(api_bp)
 
     return app
 

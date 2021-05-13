@@ -41,7 +41,11 @@ ENV FVCORE_CACHE="/tmp"
 
 # ---
 
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 RUN pip install --user celery
+RUN pip install --user redis
 
 # ---
 

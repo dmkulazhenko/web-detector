@@ -1,14 +1,12 @@
-import multiprocessing as mp
-
-import cv2
 from detectron2.config import get_cfg
-from detectron2.data.detection_utils import read_image
 
 from .config import DETECTRON_MODEL_CFG, DETECTRON_MODEL_TS
+from .detector_celery import celery
 from .predictor import Predictor
 
 
 def get_model_cfg():
+    # Mount volume with torch models to cache models
     cfg = get_cfg()
     cfg.merge_from_file(DETECTRON_MODEL_CFG)
     cfg.MODEL.RETINANET.SCORE_THRESH_TEST = DETECTRON_MODEL_TS
@@ -20,53 +18,23 @@ def get_model_cfg():
     return cfg
 
 
-def image(model, img_path):
-    img = read_image(img_path, format="BGR")
+@celery.task(name="detector.detector.detect_frames")
+def detect_frames(frames):
+    # We need to init model every time :(
+    # bcs celery uses regular multiprocessing, not torch's one.
+    predictor = Predictor(get_model_cfg())
+    predictions = predictor.run_on_frames(frames)
 
-    predictions = model.run_on_image(img)
-    labels = list(model.metadata.thing_classes)
-
-    return [
-        (labels[int(cls_)], float(scr))
-        for cls_, scr in zip(
-            predictions["instances"].get("pred_classes"),
-            predictions["instances"].get("scores"),
-        )
-    ]
-
-
-def video(model, vid_path):
-    vid = cv2.VideoCapture(vid_path)
-
-    predictions = model.run_on_video(vid)
-    labels = list(model.metadata.thing_classes)
-
+    labels = list(predictor.metadata.thing_classes)
+    result = []
     for prediction in predictions:
-        yield [
-            (labels[int(cls_)], float(scr))
-            for cls_, scr in zip(
-                prediction["instances"].get("pred_classes"),
-                prediction["instances"].get("scores"),
-            )
-        ]
-
-    vid.release()
-
-
-def main():
-    if mp.get_start_method(allow_none=True) != 'spawn':
-        mp.set_start_method('spawn', force=True)
-
-    cfg = get_model_cfg()
-    model = Predictor(cfg)
-
-    if input("Type: ") == "img":
-        print(image(model, input("Path to image: ")))
-    else:
-        res = [i for i in video(model, input("Path to video: "))]
-        print("Total frames: ", len(res))
-        print(res)
-
-
-if __name__ == "__main__":
-    main()
+        result.append(
+            [
+                (labels[int(cls_)], float(scr))
+                for cls_, scr in zip(
+                    prediction["instances"].get("pred_classes"),
+                    prediction["instances"].get("scores"),
+                )
+            ]
+        )
+    return result

@@ -31,32 +31,27 @@ class Predictor(object):
     def run_on_image(self, image):
         return self.predictor(image)
 
-    @staticmethod
-    def _frame_from_video(video):
-        while video.isOpened():
-            success, frame = video.read()
-            if success:
-                yield frame
-            else:
-                break
-
     def run_on_video(self, video):
-        frame_gen = self._frame_from_video(video)
+        def _frame_from_video(vid):
+            while vid.isOpened():
+                success, frm = vid.read()
+                if success:
+                    yield frm
+                else:
+                    break
+
+        frame_gen = _frame_from_video(video)
+        return self.run_on_frames(frame_gen)
+
+    def run_on_frames(self, frames):
         if self.parallel:
             buffer_size = self.predictor.default_buffer_size
             frame_data = deque()
 
-            for cnt, frame in enumerate(frame_gen):
+            for cnt, frame in enumerate(frames):
                 frame_data.append(frame)
                 self.predictor.put(frame)
 
-                # Based on the claim that:
-                # all frames are processed at about the same speed.
-                # Formal: max_proc_time - min_proc_time < EPS
-                #
-                # If you traced bottleneck here, then feel free to refactor
-                # Basically we should track current buffer load
-                # and pop as much as we can, to put as much as we can later.
                 if cnt >= buffer_size:
                     frame_data.popleft()
                     yield self.predictor.get()
@@ -64,7 +59,7 @@ class Predictor(object):
                 frame_data.popleft()
                 yield self.predictor.get()
         else:
-            for frame in frame_gen:
+            for frame in frames:
                 yield self.predictor(frame)
 
 
