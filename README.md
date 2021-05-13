@@ -6,7 +6,7 @@ Web-Detector — RESTful API service for object detection, based on [Detectron2]
 
 ## Deployment
 
-The Web-detector is best run on multiple high-performance nodes, below is an example of using docker-compose to run the web-detector on a single machine, from which you can quite easily understand what is going on.
+Web-detector designed to run on multiple high-performance nodes, below is an example of using docker-compose to run the web-detector on a single machine, from which you can quite easily understand what is going on.
 
 ### Requirements
 
