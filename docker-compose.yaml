@@ -7,6 +7,7 @@ services:
       dockerfile: web/Dockerfile
     environment:
       - FLASK_APP=web_app.py
+      - FLASK_CONFIG=production
       - CELERY_MODE=CLIENT
       - VIDEO_STORAGE=/video_storage
       - SQLALCHEMY_MIGRATIONS_DIR=/migrations

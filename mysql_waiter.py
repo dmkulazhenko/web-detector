@@ -8,7 +8,6 @@ from mysql.connector import connection
 def wait_for_mysql(
     user, password, host, port, database, max_retries, sleep_time
 ):
-    print(user, password, host, port, database, max_retries, sleep_time)
     retry = 0
     while retry < max_retries:
         retry += 1

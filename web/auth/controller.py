@@ -4,8 +4,8 @@ from flask_restx import Resource
 from web.utils import validation_error
 
 from .dto import AuthDto
-from .service import AuthService
 from .schemas import AuthSchema
+from .service import AuthService
 
 api = AuthDto.api
 

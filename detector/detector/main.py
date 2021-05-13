@@ -23,6 +23,7 @@ def get_model_cfg():
 
 
 def get_predictor() -> Predictor:
+    # cache predictor object, as far as initialization is pretty expensive
     if not hasattr(local_storage, "predictor"):
         local_storage.predictor = Predictor(get_model_cfg())
     return local_storage.predictor

@@ -4,14 +4,16 @@ This module:
 
 - Contains create_app()
 - Registers extensions
+- Creates celery instance
 """
 from flask import Flask
 
 from celery_client import create_celery
+
 from .config import config_by_name
 from .extensions import bcrypt, db, jwt, ma
 
-celery = create_celery("CLIENT")  # FIXME: Pretty weird
+celery = create_celery("CLIENT")
 
 
 def create_app(config_name):

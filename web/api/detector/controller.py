@@ -20,7 +20,7 @@ class DetectorDetect(Resource):
         },
         security="api_key",
     )
-    @api.expect(detect_upload_request)  # validate = True?
+    @api.expect(detect_upload_request)
     @jwt_required()
     def post(self):
         video: FileStorage = detect_upload_request.parse_args()["video"]
