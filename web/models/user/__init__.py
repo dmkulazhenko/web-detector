@@ -1,2 +1,2 @@
-from .user import User
+from .models import User
 from .schemas import UserSchema

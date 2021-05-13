@@ -1,8 +1,12 @@
+from threading import local
+
 from detectron2.config import get_cfg
 
 from .config import DETECTRON_MODEL_CFG, DETECTRON_MODEL_TS
 from .detector_celery import celery
 from .predictor import Predictor
+
+local_storage = local()
 
 
 def get_model_cfg():
@@ -18,11 +22,15 @@ def get_model_cfg():
     return cfg
 
 
+def get_predictor() -> Predictor:
+    if not hasattr(local_storage, "predictor"):
+        local_storage.predictor = Predictor(get_model_cfg())
+    return local_storage.predictor
+
+
 @celery.task(name="detector.detector.detect_frames")
 def detect_frames(frames):
-    # We need to init model every time :(
-    # bcs celery uses regular multiprocessing, not torch's one.
-    predictor = Predictor(get_model_cfg())
+    predictor = get_predictor()
     predictions = predictor.run_on_frames(frames)
 
     labels = list(predictor.metadata.thing_classes)

@@ -5,16 +5,15 @@ services:
     build:
       context: .
       dockerfile: web/Dockerfile
-    working_dir: /app
     environment:
       - FLASK_APP=web_app.py
       - CELERY_MODE=CLIENT
-      - CELERY_BACKEND_URL=redis://detector_redis:6379/0
-      - CELERY_BROKER_URL=amqp://detector_rabbitmq
       - VIDEO_STORAGE=/video_storage
+    env_file:
+      - .env
     volumes:
       - .:/app:ro
-      - ~/storage:/video_storage:rw
+      - ./video_storage:/video_storage:rw
     ports:
       - 5000:5000
     depends_on:
@@ -31,13 +30,13 @@ services:
       dockerfile: detector/processor/Dockerfile
     environment:
       - CELERY_MODE=PROCESSOR
-      - CELERY_BACKEND_URL=redis://detector_redis:6379/0
-      - CELERY_BROKER_URL=amqp://detector_rabbitmq
       - VIDEO_STORAGE=/video_storage
       - C_FORCE_ROOT=true
+    env_file:
+      - .env
     volumes:
       - .:/app:rw
-      - ~/storage:/video_storage:ro
+      - ./video_storage:/video_storage:ro
     depends_on:
       - detector_redis
       - detector_rabbitmq
@@ -51,6 +50,15 @@ services:
       dockerfile: detector/detector/Dockerfile
       args:
         USER_ID: ${USER_ID:-1000}
+    volumes:
+      - .:/home/appuser/app:ro
+    environment:
+      - DISPLAY=$DISPLAY
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CELERY_MODE=DETECTOR
+      - C_FORCE_ROOT=true
+    env_file:
+      - .env
     shm_size: "8gb"
     deploy:
       resources:
@@ -61,15 +69,6 @@ services:
     ulimits:
       memlock: -1
       stack: 67108864
-    volumes:
-      - .:/home/appuser/app:ro
-    environment:
-      - DISPLAY=$DISPLAY
-      - NVIDIA_VISIBLE_DEVICES=all
-      - CELERY_MODE=DETECTOR
-      - CELERY_BACKEND_URL=redis://detector_redis:6379/0
-      - CELERY_BROKER_URL=amqp://detector_rabbitmq
-      - C_FORCE_ROOT=true
     depends_on:
       - detector_rabbitmq
       - detector_redis

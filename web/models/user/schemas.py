@@ -1,6 +1,6 @@
 from web import ma
 
-from .user import User
+from .models import User
 
 
 class UserSchema(ma.SQLAlchemySchema):

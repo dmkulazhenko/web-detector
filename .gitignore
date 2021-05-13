@@ -9,4 +9,4 @@ migrations/
 /venv/
 /detector/processor/venv
 /detector/detector/venv
-
+/video_storage
