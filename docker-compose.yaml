@@ -1,0 +1,100 @@
+version: "3.8"
+services:
+  detector_web:
+    container_name: detector_web
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    environment:
+      - FLASK_APP=web_app.py
+      - FLASK_CONFIG=production
+      - CELERY_MODE=CLIENT
+      - VIDEO_STORAGE=/video_storage
+      - SQLALCHEMY_MIGRATIONS_DIR=/migrations
+      - MYSQL_WAITER=30:5
+    env_file:
+      - .env
+    volumes:
+      - .:/app:ro
+      - ./migrations:/migrations:rw
+      - ./video_storage:/video_storage:rw
+    ports:
+      - 5000:5000
+    depends_on:
+      - detector_processor
+      - detector_detector
+      - detector_mysql
+    restart: unless-stopped
+    command: sh -c "./web_app.sh $MIGRATE"
+
+  detector_processor:
+    container_name: detector_processor
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: detector/processor/Dockerfile
+    environment:
+      - CELERY_MODE=PROCESSOR
+      - VIDEO_STORAGE=/video_storage
+      - C_FORCE_ROOT=true
+    env_file:
+      - .env
+    volumes:
+      - .:/app:rw
+      - ./video_storage:/video_storage:ro
+    depends_on:
+      - detector_redis
+      - detector_rabbitmq
+      - detector_detector
+    command: sh -c "sleep 15 && celery -A detector.processor.processor_celery worker -Q processor --autoscale 3,1 --loglevel=INFO"
+
+  detector_detector:
+    container_name: detector_detector
+    build:
+      context: .
+      dockerfile: detector/detector/Dockerfile
+      args:
+        USER_ID: ${USER_ID:-1000}
+    volumes:
+      - .:/home/appuser/app:ro
+    environment:
+      - DISPLAY=$DISPLAY
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CELERY_MODE=DETECTOR
+      - C_FORCE_ROOT=true
+    env_file:
+      - .env
+    shm_size: "8gb"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities:
+                - gpu
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    depends_on:
+      - detector_rabbitmq
+      - detector_redis
+    command: sh -c "celery -A detector.detector.detector_celery worker -Q detector --autoscale 2,1 --loglevel=INFO"
+
+  detector_mysql:
+    container_name: detector_mysql
+    image: mysql
+    env_file:
+      - .env
+# Save data not only in container for production
+#    volumes:
+#      - ~/mysql_data:/var/lib/mysql:rw
+
+  detector_redis:
+    container_name: detector_redis
+    image: redis
+    restart: unless-stopped
+
+  detector_rabbitmq:
+    container_name: detector_rabbitmq
+    image: rabbitmq
+    restart: unless-stopped
+
