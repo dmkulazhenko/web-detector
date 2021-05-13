@@ -33,7 +33,7 @@ The Web-detector is best run on multiple high-performance nodes, below is an exa
 - Swagger spec for API on [`localhost:5000/api`](http://localhost:5000/api);
 
 ##### Note for swagger auth
-If will use swagger to make some requests: you should add `Bearer ` to generated access token. E.g. token = `super-token` -> authorize in swagger using token = `Bearer super-token`.
+If you will use swagger to make some requests: you should add `Bearer ` to generated access token. E.g. token = `super-token` -> authorize in swagger using token = `Bearer super-token`.
 
 -----
 
