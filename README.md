@@ -12,7 +12,7 @@ Web-detector designed to run on multiple high-performance nodes, below is an exa
 
 1. Nvidia GPU (it should be OK with AMD GPU or only CPU, but I'm not sure, tested only on gtx 980ti);
 2. [`docker>=20.10.6`](https://www.docker.com/), [`docker-compose>=1.29.1`](https://github.com/docker/compose);
-3. [`nvidia-docker-toolkit>=1.3.3`](https://github.com/NVIDIA/nvidia-docker).
+3. [`nvidia-container-toolkit>=1.3.3`](https://github.com/NVIDIA/nvidia-docker).
 
 Btw, since the project depends very much on the environment and has only been tested on one machine, I will just leave it here:
 - Kernel: 5.10.32-1-MANJARO 
@@ -23,7 +23,7 @@ Btw, since the project depends very much on the environment and has only been te
 ##### Possible troubleshooting
 
 > `services.detector_detector.deploy.resources.reservations value Additional properties are not allowed ('devices' was unexpected)`
-- Are you sure you installed [`nvidia-docker-toolkit>=1.3.3`](https://github.com/NVIDIA/nvidia-docker)?
+- Are you sure you installed [`nvidia-container-toolkit>=1.3.3`](https://github.com/NVIDIA/nvidia-docker)?
 - Update docker / docker-compose;
 - Comment `deploy` section of `docker-compose.yaml` (lines 68-73);
 
