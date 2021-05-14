@@ -23,6 +23,7 @@ Btw, since the project depends very much on the environment and has only been te
 ##### Possible troubleshooting
 
 > `services.detector_detector.deploy.resources.reservations value Additional properties are not allowed ('devices' was unexpected)`
+- Are you sure you installed [`nvidia-docker-toolkit>=1.3.3`](https://github.com/NVIDIA/nvidia-docker)?
 - Update docker / docker-compose;
 - Comment `deploy` section of `docker-compose.yaml` (lines 68-73);
 
